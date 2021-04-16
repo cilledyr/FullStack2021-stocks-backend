@@ -16,9 +16,9 @@ export class StockGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private stockService: StockService) {}
   @WebSocketServer() server;
 
-  handleConnection(client: Socket, ...args): any {
+  async handleConnection(client: Socket, ...args): Promise<any> {
     console.log('Client Connect', client.id);
-    client.emit('stocks', this.stockService.getAllStocks());
+    client.emit('stocks', await this.stockService.getAllStocks());
   }
 
   handleDisconnect(client: any): any {
@@ -31,8 +31,8 @@ export class StockGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     console.log(stock.name + ' has changed');
-    this.stockService.updateStock(stock);
-    this.server.emit('stocks', this.stockService.getAllStocks());
+    await this.stockService.updateStock(stock);
+    this.server.emit('stocks', await this.stockService.getAllStocks());
   }
 
   @SubscribeMessage('deleteStock')
@@ -41,7 +41,7 @@ export class StockGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     console.log(stock.name + ' has been deleted');
-    const newList = this.stockService.deleteStock(stock);
+    const newList = await this.stockService.deleteStock(stock);
     this.server.emit('stocks', newList);
   }
 }
